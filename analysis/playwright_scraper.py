@@ -15,6 +15,7 @@ from __future__ import annotations
 import argparse
 import json
 import re
+import os
 import sys
 from pathlib import Path
 from typing import Any, Dict, List, Optional
@@ -174,6 +175,14 @@ def scrape(disease: str, max_results: int, output_path: Path, headless: bool = T
     pairs: List[Dict[str, Optional[str]]] = []
     seen: set[str] = set()
     records: List[Dict[str, Any]] = []
+
+    # On Streamlit Community Cloud, build/run may happen under different users.
+    # Use a project-local Playwright browser cache so Chromium is found reliably.
+    if sys.platform.startswith("linux"):
+        os.environ.setdefault(
+            "PLAYWRIGHT_BROWSERS_PATH",
+            str((Path(__file__).resolve().parents[1] / ".playwright-browsers")),
+        )
 
     with sync_playwright() as p:
         launch_args: List[str] = []
