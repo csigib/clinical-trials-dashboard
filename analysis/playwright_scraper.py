@@ -38,7 +38,7 @@ def _has_chrome_headless_shell(playwright_cache_dir: Path) -> bool:
     return False
 
 
-def _ensure_playwright_browsers_installed(timeout_seconds: int = 180) -> None:
+def _ensure_playwright_browsers_installed(timeout_seconds: int = 600) -> None:
     # Streamlit Community Cloud can sometimes end up with Playwright installed but browsers missing.
     # This makes the scraper resilient even if postBuild didn't persist or got skipped.
     if not sys.platform.startswith("linux"):
@@ -52,11 +52,17 @@ def _ensure_playwright_browsers_installed(timeout_seconds: int = 180) -> None:
     if _has_chrome_headless_shell(cache_dir):
         return
 
-    print(f"PLAYWRIGHT_INSTALL: missing browsers in {cache_dir}; running playwright install")
+    print(f"INFO_PLAYWRIGHT_INSTALL: missing browsers in {cache_dir}; downloading Playwright browsers once")
     cache_dir.mkdir(parents=True, exist_ok=True)
 
     env = os.environ.copy()
     env["PLAYWRIGHT_BROWSERS_PATH"] = str(cache_dir)
+
+    # Playwright downloads are performed by a bundled Node.js tool; suppress noisy deprecation warnings.
+    node_opts = env.get("NODE_OPTIONS", "")
+    if "--no-deprecation" not in node_opts:
+        env["NODE_OPTIONS"] = (node_opts + " --no-deprecation").strip()
+
     cmd = [sys.executable, "-m", "playwright", "install", "chromium", "chromium-headless-shell"]
     try:
         proc = subprocess.run(
@@ -67,10 +73,15 @@ def _ensure_playwright_browsers_installed(timeout_seconds: int = 180) -> None:
             text=True,
             timeout=timeout_seconds,
         )
-        if proc.stdout:
-            print(proc.stdout)
+
+        verbose = os.environ.get("PLAYWRIGHT_INSTALL_VERBOSE", "").strip().lower() in {"1", "true", "yes"}
         if proc.returncode != 0:
             print(f"WARN_PLAYWRIGHT_INSTALL_FAILED rc={proc.returncode}")
+            if proc.stdout:
+                print(proc.stdout)
+        else:
+            if verbose and proc.stdout:
+                print(proc.stdout)
     except Exception as exc:
         print(f"WARN_PLAYWRIGHT_INSTALL_EXCEPTION {type(exc).__name__}: {exc}")
 
