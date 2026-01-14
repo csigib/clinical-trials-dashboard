@@ -15,8 +15,44 @@ DATA_DIR = Path("data")
 DATA_DIR.mkdir(exist_ok=True)
 
 st.set_page_config(page_title="Clinical Trials Analytics", layout="wide")
-st.title("🧬 Clinical Trials Analytics Dashboard (API vs Browser Scraper from ClinicalTrials.gov website)")
-st.caption("Upwork sample portfolio project for Balazs Csigi")
+st.markdown(
+        """
+<style>
+.hero {
+    padding: 1.1rem 1.2rem;
+    border-radius: 14px;
+    border: 1px solid rgba(20, 80, 140, 0.22);
+    background: linear-gradient(135deg, rgba(20, 80, 140, 0.12), rgba(140, 50, 120, 0.08));
+}
+.hero-title {
+    font-size: 1.85rem;
+    font-weight: 800;
+    line-height: 1.15;
+    margin: 0;
+}
+.hero-sub {
+    margin-top: 0.35rem;
+    font-size: 1.05rem;
+    font-weight: 650;
+    opacity: 0.95;
+}
+.hero-meta {
+    margin-top: 0.35rem;
+    font-size: 0.95rem;
+    opacity: 0.85;
+}
+</style>
+
+<div class="hero">
+    <div class="hero-title">🧬 Clinical Trials Analytics Dashboard</div>
+    <div class="hero-sub">Upwork sample portfolio project for Balazs Csigi</div>
+    <div class="hero-meta">API vs Browser Scraper (ClinicalTrials.gov)</div>
+</div>
+""",
+        unsafe_allow_html=True,
+)
+
+st.write("")
 
 # Responsive tweaks (reduce horizontal scrolling in tables).
 st.markdown(
@@ -47,6 +83,8 @@ max_results_api = st.sidebar.slider("Max results", 10, 500, 100, 10)
 fetch_api_btn = st.sidebar.button("Fetch from Official API")
 max_results_browser = st.sidebar.slider("Max results", 10, 30, 10, 5)
 run_browser_btn = st.sidebar.button("Run Browser Scraper (Playwright)")
+# Hide noisy Playwright logs by default (can be enabled for debugging).
+show_playwright_logs = st.sidebar.checkbox("Show Playwright debug logs", value=False)
 # uploaded_file = st.sidebar.file_uploader("Or upload pre-scraped JSONL/CSV", type=["csv", "jsonl", "json"])
 
 # cached API fetch
@@ -83,7 +121,6 @@ if run_browser_btn:
     timestamp = int(time.time())
     out_path = DATA_DIR / f"playwright_{disease.replace(' ', '_')}_{timestamp}.jsonl"
     st.info(f"Running Playwright scraper for '{disease}' (max {max_results_browser}). This runs a subprocess and may take a while. Scraping ClinicalTrials.gov is just for demonstration purposes. The API method is orders of magnitude faster for querying this website in a production environment. Records with 'unknown status' are excluded. See the README for more information.")
-    log_box = st.empty()
     with st.spinner("Running Playwright (separate process)..."):
         returncode, elapsed, logs = run_playwright_subprocess(
             script_path="analysis/playwright_scraper.py",
@@ -93,7 +130,9 @@ if run_browser_btn:
             timeout=600
         )
     st.session_state["playwright_logs"] = logs
-    log_box.text_area("Playwright logs (latest run)", value="\n".join(logs), height=300)
+    if show_playwright_logs:
+        with st.expander("Playwright logs (latest run)", expanded=False):
+            st.text_area("", value="\n".join(logs), height=300)
     if returncode == 0 and out_path.exists():
         try:
             df_scraped = pd.read_json(out_path, lines=True)
@@ -106,7 +145,12 @@ if run_browser_btn:
         except Exception as e:
             st.error(f"Could not read Playwright output: {e}")
     else:
-        st.error(f"Playwright finished with return code {returncode}. Check logs above.")
+        st.error("Playwright failed. Enable 'Show Playwright debug logs' in the sidebar for details.")
+
+# Optional: show latest logs even when not re-running (useful after errors).
+if show_playwright_logs and st.session_state.get("playwright_logs"):
+    with st.expander("Playwright logs (last captured)", expanded=False):
+        st.text_area("", value="\n".join(st.session_state["playwright_logs"]), height=300)
 
 # show status
 df_api = st.session_state.get("df_api")
