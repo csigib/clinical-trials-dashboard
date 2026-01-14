@@ -2,4 +2,8 @@
 set -e
 
 # Install Playwright browser binaries during Streamlit Cloud build.
+# Use a project-local browsers path so the runtime user doesn't need access
+# to the build user's home directory.
+export PLAYWRIGHT_BROWSERS_PATH="$PWD/.playwright-browsers"
+
 python -m playwright install chromium
