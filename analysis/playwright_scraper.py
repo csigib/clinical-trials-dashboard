@@ -16,6 +16,7 @@ import argparse
 import json
 import re
 import os
+import subprocess
 import sys
 from pathlib import Path
 from typing import Any, Dict, List, Optional
@@ -24,6 +25,61 @@ from playwright.sync_api import sync_playwright
 
 
 DEFAULT_TIMEOUT_MS = 30000
+
+
+def _has_chrome_headless_shell(playwright_cache_dir: Path) -> bool:
+    try:
+        for bundle_dir in playwright_cache_dir.glob("chromium_headless_shell-*"):
+            exe = bundle_dir / "chrome-headless-shell-linux64" / "chrome-headless-shell"
+            if exe.exists():
+                return True
+    except Exception:
+        return False
+    return False
+
+
+def _ensure_playwright_browsers_installed(timeout_seconds: int = 180) -> None:
+    # Streamlit Community Cloud can sometimes end up with Playwright installed but browsers missing.
+    # This makes the scraper resilient even if postBuild didn't persist or got skipped.
+    if not sys.platform.startswith("linux"):
+        return
+
+    cache = os.environ.get("PLAYWRIGHT_BROWSERS_PATH")
+    if not cache:
+        return
+
+    cache_dir = Path(cache)
+    if _has_chrome_headless_shell(cache_dir):
+        return
+
+    print(f"PLAYWRIGHT_INSTALL: missing browsers in {cache_dir}; running playwright install")
+    cache_dir.mkdir(parents=True, exist_ok=True)
+
+    env = os.environ.copy()
+    env["PLAYWRIGHT_BROWSERS_PATH"] = str(cache_dir)
+    cmd = [sys.executable, "-m", "playwright", "install", "chromium", "chromium-headless-shell"]
+    try:
+        proc = subprocess.run(
+            cmd,
+            env=env,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True,
+            timeout=timeout_seconds,
+        )
+        if proc.stdout:
+            print(proc.stdout)
+        if proc.returncode != 0:
+            print(f"WARN_PLAYWRIGHT_INSTALL_FAILED rc={proc.returncode}")
+    except Exception as exc:
+        print(f"WARN_PLAYWRIGHT_INSTALL_EXCEPTION {type(exc).__name__}: {exc}")
+
+    # Re-check after attempting install.
+    if not _has_chrome_headless_shell(cache_dir):
+        print(
+            "WARN_PLAYWRIGHT_BROWSERS_STILL_MISSING: headless shell executable not found; "
+            "Playwright launch may still fail."
+        )
 
 
 def _clean_text(val: Optional[str]) -> Optional[str]:
@@ -183,6 +239,9 @@ def scrape(disease: str, max_results: int, output_path: Path, headless: bool = T
             "PLAYWRIGHT_BROWSERS_PATH",
             str((Path(__file__).resolve().parents[1] / ".playwright-browsers")),
         )
+
+        # Best-effort: ensure browsers exist before starting Playwright.
+        _ensure_playwright_browsers_installed()
 
     with sync_playwright() as p:
         launch_args: List[str] = []
