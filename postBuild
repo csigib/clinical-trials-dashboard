@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+set -e
+
+# Install Playwright browser binaries during Streamlit Cloud build.
+python -m playwright install chromium
