@@ -15,6 +15,7 @@ from __future__ import annotations
 import argparse
 import json
 import re
+import sys
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -175,7 +176,13 @@ def scrape(disease: str, max_results: int, output_path: Path, headless: bool = T
     records: List[Dict[str, Any]] = []
 
     with sync_playwright() as p:
-        browser = p.chromium.launch(headless=headless)
+        launch_args: List[str] = []
+        # Streamlit Community Cloud runs in a restricted Linux container where Chromium sandboxing
+        # and /dev/shm sizing can cause launch crashes.
+        if sys.platform.startswith("linux"):
+            launch_args.extend(["--no-sandbox", "--disable-dev-shm-usage"])
+
+        browser = p.chromium.launch(headless=headless, args=launch_args)
         page = browser.new_page()
         page.goto(search_url, timeout=timeout_ms)
 
@@ -262,14 +269,19 @@ def main() -> None:
     parser.add_argument("--no-headless", dest="headless", action="store_false")
     args = parser.parse_args()
 
-    n = scrape(
-        disease=args.disease,
-        max_results=int(args.max_results),
-        output_path=Path(args.output),
-        headless=bool(args.headless),
-        timeout_ms=int(args.timeout),
-    )
-    print(f"SCRAPED_ITEMS={n}")
+    try:
+        n = scrape(
+            disease=args.disease,
+            max_results=int(args.max_results),
+            output_path=Path(args.output),
+            headless=bool(args.headless),
+            timeout_ms=int(args.timeout),
+        )
+        print(f"SCRAPED_ITEMS={n}")
+    except Exception as exc:
+        # Make sure the subprocess logs contain the real cause on Streamlit Cloud.
+        print(f"FATAL: {type(exc).__name__}: {exc}")
+        raise
 
 
 if __name__ == "__main__":
