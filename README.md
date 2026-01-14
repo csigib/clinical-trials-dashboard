@@ -68,40 +68,23 @@ python -m playwright install chromium
 streamlit run app.py
 ```
 
+If you prefer launching Streamlit via Python (e.g., when the `streamlit` command isn’t on your PATH):
+
+```bash
+python -m streamlit run app.py
+```
+
 ---
 
-## Run live (Streamlit Community Cloud)
+## Run live (Streamlit)
 
-### Option A (simple): API-only demo
+Live demo:
 
-This is the easiest and most reliable “live” setup.
+-  https://clinical-trials-dashboard-ghv6ndgxx3yrn2hcrfyu69.streamlit.app/
 
-1. Push this repo to GitHub
-2. Create a new app in Streamlit Community Cloud
-3. Set the entrypoint to `app.py`
-4. Use **Fetch from Official API** inside the app
+If you want to deploy your own copy on Streamlit Community Cloud, use the official guide:
 
-### Option B (advanced): Enable Playwright in the cloud
-
-Playwright needs browser binaries + OS-level dependencies. On Streamlit Community Cloud you typically:
-
-- Add a `postBuild` script that runs: `python -m playwright install chromium`
-- Add a `packages.txt` for required system libraries
-
-This repo includes both at the repo root:
-
-- `packages.txt` (apt packages installed during build)
-- `postBuild` (installs Playwright Chromium via `python -m playwright install chromium`)
-
-Deployment steps:
-
-1. Push the repo to GitHub (make sure `packages.txt` and `postBuild` are committed)
-2. In Streamlit Community Cloud, create the app from your repo
-3. Set the entrypoint to `app.py`
-4. Wait for the build to finish (the Playwright browser install runs during build)
-5. In the running app, you can use **Run Browser Scraper (Playwright)**
-
-If the build fails due to missing system libraries, Streamlit Cloud will show the apt error in build logs—add the missing package name to `packages.txt` and redeploy.
+- https://docs.streamlit.io/streamlit-community-cloud
 
 ---
 
