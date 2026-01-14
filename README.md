@@ -12,7 +12,7 @@ This is an **Upwork sample portfolio project** for **Balazs Csigi**.
 
 ---
 
-## Selling points (skills demonstrated)
+## Skills demonstrated
 
 - **Data pipelines end-to-end**: ingestion → normalization → validation → analytics → visualization
 - **Browser scraping on JS-heavy sites**: Playwright automation (selectors, pagination, detail extraction, fallbacks)
@@ -121,5 +121,6 @@ The output is **JSONL** (one JSON object per line) with keys:
 - Scraping should be done responsibly and in accordance with site terms.
 
 ---
+
 
 
