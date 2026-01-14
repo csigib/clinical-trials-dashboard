@@ -1,6 +1,8 @@
+import os
 import subprocess
 import sys
 import time
+from pathlib import Path
 from typing import Tuple, List, Optional
 
 def run_playwright_subprocess(script_path: str, disease: str, max_results: int, output_path: str,
@@ -12,7 +14,22 @@ def run_playwright_subprocess(script_path: str, disease: str, max_results: int, 
     cmd = [sys.executable, script_path, "--disease", disease, "--max_results", str(max_results), "--output", output_path, "--headless"]
     start = time.perf_counter()
     logs: List[str] = []
-    proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1)
+
+    env = os.environ.copy()
+    # Streamlit Community Cloud can run the app under a different user than the build.
+    # Force Playwright to look in the project-local browsers cache installed by postBuild.
+    if sys.platform.startswith("linux"):
+        project_root = Path(__file__).resolve().parents[1]
+        env.setdefault("PLAYWRIGHT_BROWSERS_PATH", str(project_root / ".playwright-browsers"))
+
+    proc = subprocess.Popen(
+        cmd,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        text=True,
+        bufsize=1,
+        env=env,
+    )
 
     try:
         if proc.stdout is None:
