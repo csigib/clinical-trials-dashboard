@@ -1,9 +1,18 @@
 #!/usr/bin/env bash
-set -e
+set -euxo pipefail
 
 # Install Playwright browser binaries during Streamlit Cloud build.
 # Use a project-local browsers path so the runtime user doesn't need access
 # to the build user's home directory.
 export PLAYWRIGHT_BROWSERS_PATH="$PWD/.playwright-browsers"
 
-python -m playwright install chromium
+python -V
+python -m playwright --version
+
+# Install both the regular Chromium bundle and the headless-shell bundle.
+# Newer Playwright versions may launch the headless shell by default in some environments.
+python -m playwright install chromium chromium-headless-shell
+
+echo "Playwright browsers installed into: $PLAYWRIGHT_BROWSERS_PATH"
+ls -la "$PLAYWRIGHT_BROWSERS_PATH"
+python -m playwright install --check
