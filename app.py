@@ -93,7 +93,7 @@ if run_browser_btn:
             timeout=600
         )
     st.session_state["playwright_logs"] = logs
-    # log_box.text_area("Playwright logs (latest run)", value="\n".join(logs), height=300)
+    log_box.text_area("Playwright logs (latest run)", value="\n".join(logs), height=300)
     if returncode == 0 and out_path.exists():
         try:
             df_scraped = pd.read_json(out_path, lines=True)
