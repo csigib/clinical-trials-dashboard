@@ -2,7 +2,6 @@ name: Keep Streamlit awake
 
 on:
   schedule:
-    # Every 3 hours (UTC)
     - cron: "0 */3 * * *"
   workflow_dispatch: {}
 
@@ -10,12 +9,12 @@ jobs:
   ping:
     runs-on: ubuntu-latest
     steps:
-      - name: Ping Streamlit app
+      - name: Debug ping Streamlit app
         run: |
           set -e
           APP_URL="https://clinical-trials-dashboard-ghv6ndgxx3yrn2hcrfyu69.streamlit.app/"
+
           echo "Pinging: $APP_URL"
-          curl -L --fail --silent --show-error \
-            --retry 6 --retry-delay 15 --max-time 60 \
-            "$APP_URL" > /dev/null
-          echo "OK"
+          curl -L -v --max-time 90 \
+            -o /dev/null -w "\nHTTP %{http_code}\n" \
+            "$APP_URL"
