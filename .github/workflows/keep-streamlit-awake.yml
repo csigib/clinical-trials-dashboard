@@ -9,12 +9,14 @@ jobs:
   ping:
     runs-on: ubuntu-latest
     steps:
-      - name: Debug ping Streamlit app
+      - name: Ping Streamlit app
         run: |
           set -e
           APP_URL="https://clinical-trials-dashboard-ghv6ndgxx3yrn2hcrfyu69.streamlit.app/"
 
           echo "Pinging: $APP_URL"
-          curl -L -v --max-time 90 \
-            -o /dev/null -w "\nHTTP %{http_code}\n" \
+          curl -L --fail --silent --show-error \
+            --cookie-jar /tmp/cookies.txt --cookie /tmp/cookies.txt \
+            --retry 6 --retry-delay 15 --max-time 120 \
+            -o /dev/null -w "HTTP %{http_code}\n" \
             "$APP_URL"
