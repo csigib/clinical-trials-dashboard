@@ -82,7 +82,7 @@ Live demo:
 
 -  https://clinical-trials-dashboard-ghv6ndgxx3yrn2hcrfyu69.streamlit.app/
 
-IMPORTANT: If you see the message "This app has gone to sleep due to inactivity", just press the button "Yes, get this app back up!" and the app should load within a few seconds.
+IMPORTANT: If you see the message "This app has gone to sleep due to inactivity", just press the button "Yes, get this app back up!" and the app should load within a few seconds. If it still doesn't load, just refresh the browser.
 
 ---
 
@@ -92,6 +92,7 @@ IMPORTANT: If you see the message "This app has gone to sleep due to inactivity"
 - Scraping should be done responsibly and in accordance with site terms.
 
 ---
+
 
 
 
