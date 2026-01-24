@@ -45,7 +45,7 @@ st.markdown(
 
 <div class="hero">
     <div class="hero-title">🧬 Clinical Trials Analytics Dashboard</div>
-    <div class="hero-sub">Upwork sample portfolio project for Balazs Csigi</div>
+    <div class="hero-sub">Portfolio project for Balazs Csigi</div>
     <div class="hero-meta">API vs Browser Scraper (ClinicalTrials.gov)</div>
 </div>
 """,
@@ -319,4 +319,5 @@ else:
     sns.heatmap(top_geo.set_index("country").T, annot=True, fmt="d", cmap="Reds", cbar=True, ax=ax)
     ax.set_ylabel("")
     st.pyplot(fig_hm)
+
 
