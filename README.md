@@ -8,7 +8,7 @@ A portfolio-ready dashboard that compares **two real-world data acquisition pipe
 - **Official API pipeline** (fast, structured)
 - **Browser automation pipeline (Playwright)** (slower, but works on dynamic/JS-rendered pages)
 
-This is an **Upwork sample portfolio project** for **Balazs Csigi**.
+This is a **Portfolio project** for **Balazs Csigi**.
 
 ---
 
@@ -82,36 +82,7 @@ Live demo:
 
 -  https://clinical-trials-dashboard-ghv6ndgxx3yrn2hcrfyu69.streamlit.app/
 
-If you want to deploy your own copy on Streamlit Community Cloud, use the official guide:
-
-- https://docs.streamlit.io/streamlit-community-cloud
-
----
-
-## Playwright scraper CLI (optional)
-
-The Streamlit app runs Playwright as a subprocess, but you can also run it directly:
-
-```bash
-python analysis/playwright_scraper.py \
-  --disease "Type 2 Diabetes" \
-  --max_results 25 \
-  --output data/out.jsonl \
-  --headless
-```
-
-Windows PowerShell example:
-
-```powershell
-python .\analysis\playwright_scraper.py --disease "Type 2 Diabetes" --max_results 25 --output .\data\out.jsonl --headless
-```
-
-The output is **JSONL** (one JSON object per line) with keys:
-
-- `nctId`
-- `briefTitle`
-- `startYear`
-- `country`
+IMPORTANT: If you see the message "This app has gone to sleep due to inactivity", just press the button "Yes, get this app back up!" and the app should load within a few seconds.
 
 ---
 
@@ -121,6 +92,7 @@ The output is **JSONL** (one JSON object per line) with keys:
 - Scraping should be done responsibly and in accordance with site terms.
 
 ---
+
 
 
 
